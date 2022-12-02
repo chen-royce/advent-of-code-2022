@@ -29,6 +29,12 @@ var drawingCombos = map[string]string{
 	"C": "Z",
 }
 
+var losingCombos = map[string]string{
+	"A": "Z",
+	"B": "X",
+	"C": "Y",
+}
+
 func main() {
 	filepath := "./problem/input.txt"
 	input, err := os.Open(filepath)
@@ -48,29 +54,29 @@ func main() {
 
 		log.Println("yourMove, opponentMove", yourMove, opponentMove)
 
+		var yourThrow string
+
 		// add your value
 		switch yourMove {
 		case "X":
+			score += LOSS
+			yourThrow = losingCombos[opponentMove]
+		case "Y":
+			score += DRAW
+			yourThrow = drawingCombos[opponentMove]
+		case "Z":
+			score += WIN
+			yourThrow = winningCombos[opponentMove]
+		}
+
+		// check your input
+		switch yourThrow {
+		case "X":
 			score += ROCK
-			log.Println("Adding rock score")
 		case "Y":
 			score += PAPER
-			log.Println("Adding paper score")
 		case "Z":
 			score += SCISSORS
-			log.Println("Adding scissors score")
-		}
-
-		// check for win
-		if winningCombos[opponentMove] == yourMove {
-			score += 6
-			log.Println("won")
-		}
-
-		// check for draw
-		if drawingCombos[opponentMove] == yourMove {
-			score += 3
-			log.Println("draw")
 		}
 	}
 
