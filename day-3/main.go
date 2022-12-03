@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -18,23 +19,24 @@ func main() {
 
 	scanner := bufio.NewScanner(input)
 
+	var groupOf3 []string
+
 	for scanner.Scan() {
-		currSack := scanner.Text()
-		sack1 := currSack[:len(currSack)/2]
-		sack2 := currSack[len(currSack)/2:]
+		groupOf3 = append(groupOf3, scanner.Text())
+		if len(groupOf3) >= 3 {
+			sack1 := groupOf3[0]
+			sack2 := groupOf3[1]
+			sack3 := groupOf3[2]
 
-		letterMap := make(map[uint8]struct{})
-
-		for idx, _ := range sack1 {
-			letterMap[sack1[idx]] = struct{}{}
-		}
-
-		for idx, _ := range sack2 {
-			if _, ok := letterMap[sack2[idx]]; ok {
-				log.Println(string(sack2[idx]))
-				priorities += getPointValueOfLetter(sack2[idx])
-				break
+			for idx, _ := range sack1 {
+				if strings.Contains(sack2, string(sack1[idx])) && strings.Contains(sack3, string(sack1[idx])) {
+					priorities += getPointValueOfLetter(sack1[idx])
+					break
+				}
 			}
+
+			// Reset group to be empty
+			groupOf3 = []string{}
 		}
 	}
 
