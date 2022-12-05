@@ -19,17 +19,7 @@ var (
 	stack8 = []string{"M", "J", "B", "S", "V", "D", "N"}
 	stack9 = []string{"G", "L", "D"}
 
-	stacks = [][]string{
-		stack1,
-		stack2,
-		stack3,
-		stack4,
-		stack5,
-		stack6,
-		stack7,
-		stack8,
-		stack9,
-	}
+	stacks = [][]string{stack1, stack2, stack3, stack4, stack5, stack6, stack7, stack8, stack9}
 )
 
 func main() {
@@ -47,23 +37,19 @@ func main() {
 		if sentence[0] != "move" {
 			continue
 		}
-		log.Println(sentence)
 		action := parseSentence(sentence)
 
-		for i := 0; i < action[0]; i++ {
-			src := stacks[action[1]]
-			dst := stacks[action[2]]
-			popped := src[len(src)-1]
+		src := stacks[action[1]]
+		dst := stacks[action[2]]
 
-			src = src[:len(src)-1]
-			dst = append(dst, popped)
+		offset := len(src) - action[0]
+		popped := src[offset:]
 
-			stacks[action[1]] = src
-			stacks[action[2]] = dst
+		src = src[:len(src)-action[0]]
+		dst = append(dst, popped...)
 
-			log.Println("SRC", stacks[action[1]])
-			log.Println("DST", stacks[action[2]])
-		}
+		stacks[action[1]] = src
+		stacks[action[2]] = dst
 	}
 
 	// log final answer
