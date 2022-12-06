@@ -23,9 +23,6 @@ func main() {
 		var encountered []rune
 
 		for idx, char := range input {
-			log.Println("CHAR:", char)
-			log.Println("ENCOUNTERED:", encountered)
-
 			// if we find something we've encountered, we need to reset
 			// our encountered array
 			if foundIdx := findInSlice(char, encountered); foundIdx != -1 {
@@ -33,16 +30,17 @@ func main() {
 				continue
 			}
 
+			// else, go ahead and append it
 			encountered = append(encountered, char)
 
-			// if length 3, yay - we found the 4th
-			if len(encountered) == 4 {
+			// if length 14, yay - we found the 14th
+			if len(encountered) == 14 {
 				log.Println(idx + 1)
 				break
 			}
 
-			// if length >3, need to bump 1
-			if len(encountered) == 5 {
+			// if length >14, need to bump 1
+			if len(encountered) == 15 {
 				encountered = append(encountered, char)
 				encountered = encountered[1:]
 			}
