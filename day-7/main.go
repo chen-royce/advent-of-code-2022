@@ -76,15 +76,27 @@ func main() {
 	sizes := []int{}
 	names := []string{}
 
-	root.getAllFolderNamesAndSizesOverX(8381165, &sizes, &names)
-	log.Println("SIZES:", sizes)
-	log.Println("NAMES:", names)
-	log.Println(sizes[findClosestLargerOrEqualNumberIdx(8381165, sizes)])
+	root.getAllFolderNamesAndSizes(&sizes, &names)
+	// log.Println("SIZES:", sizes)
+	// log.Println("NAMES:", names)
+	log.Println(sizes[findClosestLargerOrEqualNumberIdx(3636666, sizes)])
+	log.Println(names[findClosestLargerOrEqualNumberIdx(3636666, sizes)])
+
+	// printAllSizes(root)
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
 
+}
+
+func printAllSizes(root *node) {
+	log.Println(root.Metadata.Size, root.Metadata.Name)
+	if len(root.Children) != 0 {
+		for _, c := range root.Children {
+			printAllSizes(c)
+		}
+	}
 }
 
 // sumSlice is a helper func to sum slice up for 1st star
@@ -116,6 +128,19 @@ func findClosestLargerOrEqualNumberIdx(target int, input []int) int {
 	}
 
 	return currClosestIdx
+}
+
+// getAllFolderNamesAndSizes attempts to update 2 input arrays with all the folder
+// names and sizes of folders
+func (n *node) getAllFolderNamesAndSizes(sizes *[]int, names *[]string) {
+	n.Metadata.Size = n.calculateSize()
+	if n.Metadata.DataType != FILE {
+		*sizes = append(*sizes, n.Metadata.Size)
+		*names = append(*names, n.Metadata.Name)
+	}
+	for _, child := range n.Children {
+		child.getAllFolderNamesAndSizes(sizes, names)
+	}
 }
 
 // getAllFolderNamesAndSizesUnderX attempts to update 2 input arrays with all the folder

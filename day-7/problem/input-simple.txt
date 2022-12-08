@@ -1,18 +1,23 @@
 $ cd /
 $ ls
 dir a
-5 b.txt
-4 c.dat
+14848514 b.txt
+8504156 c.dat
 dir d
 $ cd a
 $ ls
-3 f
-2 g
-dir h
-$ cd h
-100 m
+dir e
+29116 f
+2557 g
+62596 h.lst
+$ cd e
+$ ls
+584 i
 $ cd ..
 $ cd ..
 $ cd d
 $ ls
-1 j
+4060174 j
+8033020 d.log
+5626152 d.ext
+7214296 k
