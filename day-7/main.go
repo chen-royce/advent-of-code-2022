@@ -8,14 +8,6 @@ import (
 	"strings"
 )
 
-// steps
-// 1. build tree
-//		1a. extract commands and run them
-//			- ls populates children
-//			- cd navigates
-// 2. populate tree with values (do i need this step?)
-// 3. search tree
-
 type node struct {
 	Parent   *node
 	Children []*node
@@ -38,8 +30,8 @@ const (
 )
 
 func main() {
-	filepath := "./problem/input-simple.txt"
-	// filepath := "./problem/input.txt"
+	// filepath := "./problem/input-simple.txt"
+	filepath := "./problem/input.txt"
 	input, err := os.Open(filepath)
 	if err != nil {
 		log.Fatal(err)
@@ -48,23 +40,31 @@ func main() {
 
 	scanner := bufio.NewScanner(input)
 
+	// initialize root node
 	root := createNode("dir root")
+
+	// initialize current node pointer
 	currNode := root
 
 	for scanner.Scan() {
+		// parse file line by line
 		currLine := scanner.Text()
 		if isCommand(currLine) {
 			command := extractCommand(currLine)
 			switch command[0] {
+			// execute cd
 			case "cd":
 				nextNode := currNode.cd(command[1])
 				log.Println("Navigating from", currNode.Metadata.Name, "to", nextNode.Metadata.Name)
 				currNode = nextNode
 				continue
+			// ls will just log, we'll handle the actual logic in else loop below since we can consider
+			// non-commands (files and `dir` to be our base input)
 			case "ls":
 				log.Println("Showing contents of", currNode.Metadata.Name)
 			}
 		} else {
+			// create a new node to store the current line's data in and then link it to its parent
 			newNode := createNode(currLine)
 			newNode.Parent = currNode
 			log.Println("Found:", newNode)
@@ -72,13 +72,13 @@ func main() {
 		}
 	}
 
+	// for solving problem: list of all directory sizes and list of names
 	sizes := []int{}
 	names := []string{}
 
-	root.getAllFolderNamesAndSizesOverX(0, &sizes, &names)
+	root.getAllFolderNamesAndSizesOverX(8381165, &sizes, &names)
 	log.Println("SIZES:", sizes)
 	log.Println("NAMES:", names)
-	log.Println(sumIntSlice(sizes))
 	log.Println(sizes[findClosestLargerOrEqualNumberIdx(8381165, sizes)])
 
 	if err := scanner.Err(); err != nil {
@@ -87,7 +87,8 @@ func main() {
 
 }
 
-func sumIntSlice(is []int) int {
+// sumSlice is a helper func to sum slice up for 1st star
+func sumSlice(is []int) int {
 	var total int
 	for _, num := range is {
 		total += num
@@ -95,6 +96,7 @@ func sumIntSlice(is []int) int {
 	return total
 }
 
+// findClosestLargerOrEqualNumberIdx finds the smallest number in a slice that's >= target
 func findClosestLargerOrEqualNumberIdx(target int, input []int) int {
 	var currClosest int
 	var currClosestIdx int
@@ -116,9 +118,11 @@ func findClosestLargerOrEqualNumberIdx(target int, input []int) int {
 	return currClosestIdx
 }
 
+// getAllFolderNamesAndSizesUnderX attempts to update 2 input arrays with all the folder
+// names and sizes of folders < size x
 func (n *node) getAllFolderNamesAndSizesUnderX(x int, sizes *[]int, names *[]string) {
 	n.Metadata.Size = n.calculateSize()
-	if n.Metadata.Size < x && n.Metadata.DataType != FILE {
+	if n.Metadata.Size <= x && n.Metadata.DataType != FILE {
 		*sizes = append(*sizes, n.Metadata.Size)
 		*names = append(*names, n.Metadata.Name)
 	}
@@ -127,9 +131,11 @@ func (n *node) getAllFolderNamesAndSizesUnderX(x int, sizes *[]int, names *[]str
 	}
 }
 
+// getAllFolderNamesAndSizesOverX attempts to update 2 input arrays with all the folder
+// names and sizes of folders > size x
 func (n *node) getAllFolderNamesAndSizesOverX(x int, sizes *[]int, names *[]string) {
 	n.Metadata.Size = n.calculateSize()
-	if n.Metadata.Size > x && n.Metadata.DataType != FILE {
+	if n.Metadata.Size >= x && n.Metadata.DataType != FILE {
 		*sizes = append(*sizes, n.Metadata.Size)
 		*names = append(*names, n.Metadata.Name)
 	}
@@ -138,6 +144,7 @@ func (n *node) getAllFolderNamesAndSizesOverX(x int, sizes *[]int, names *[]stri
 	}
 }
 
+// calculateSize recursively calculates the size of a folder or file
 func (n *node) calculateSize() int {
 	if len(n.Children) == 0 {
 		return n.Metadata.Size
@@ -150,15 +157,19 @@ func (n *node) calculateSize() int {
 	return sumOfChildrenSizes
 }
 
+// isCommand checks whether a file line is a command, since commands start with '$'
 func isCommand(s string) bool {
 	return s[0] == DOLLAR_SIGN
 }
 
+// extractCommand removes the '$' from the start of a command and returns a slice
+// containing the command followed by all its arguments
 func extractCommand(s string) []string {
 	split := strings.Split(s, " ")
 	return split[1:]
 }
 
+// createNode initializes a node
 func createNode(s string) *node {
 	nodeData := strings.Split(s, " ")
 
@@ -185,6 +196,8 @@ func createNode(s string) *node {
 	}
 }
 
+// cd is a method on the node type that navigates from the node
+// to the destination and returns a pointer to it
 func (n *node) cd(dst string) *node {
 	switch dst {
 	case "/":
@@ -200,6 +213,8 @@ func (n *node) cd(dst string) *node {
 	}
 }
 
+// findChild is a method on the node type that returns a pointer to
+// a child specified by name
 func (n *node) findChild(name string) *node {
 	for _, child := range n.Children {
 		if child.Metadata.Name == name {
