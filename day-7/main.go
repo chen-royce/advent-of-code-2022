@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -23,7 +24,7 @@ type node struct {
 
 type metadata struct {
 	Name     string
-	Size     string
+	Size     int
 	DataType dataType
 }
 
@@ -37,7 +38,8 @@ const (
 )
 
 func main() {
-	filepath := "./problem/input.txt"
+	filepath := "./problem/input-simple.txt"
+	// filepath := "./problem/input.txt"
 	input, err := os.Open(filepath)
 	if err != nil {
 		log.Fatal(err)
@@ -46,7 +48,7 @@ func main() {
 
 	scanner := bufio.NewScanner(input)
 
-	var root *node
+	root := createNode("dir root")
 	currNode := root
 
 	for scanner.Scan() {
@@ -56,17 +58,28 @@ func main() {
 			switch command[0] {
 			case "cd":
 				nextNode := currNode.cd(command[1])
-				log.Println("Navigating from %s to %s", currNode.Metadata.Name, nextNode.Metadata.Name)
+				log.Println("Navigating from", currNode.Metadata.Name, "to", nextNode.Metadata.Name)
 				currNode = nextNode
 				continue
 			case "ls":
-				log.Println("Showing contents of")
+				log.Println("Showing contents of", currNode.Metadata.Name)
 			}
 		} else {
-			newNode
-			currNode.Children = append(currNode.Children)
+			newNode := createNode(currLine)
+			newNode.Parent = currNode
+			log.Println("Found:", newNode)
+			currNode.Children = append(currNode.Children, newNode)
 		}
 	}
+
+	sizes := []int{}
+	names := []string{}
+
+	root.getAllFolderNamesAndSizesOverX(0, &sizes, &names)
+	log.Println("SIZES:", sizes)
+	log.Println("NAMES:", names)
+	log.Println(sumIntSlice(sizes))
+	log.Println(sizes[findClosestLargerOrEqualNumberIdx(8381165, sizes)])
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
@@ -74,7 +87,68 @@ func main() {
 
 }
 
-// func to extract node data from current line if not command
+func sumIntSlice(is []int) int {
+	var total int
+	for _, num := range is {
+		total += num
+	}
+	return total
+}
+
+func findClosestLargerOrEqualNumberIdx(target int, input []int) int {
+	var currClosest int
+	var currClosestIdx int
+	var largerOrEqualNumFound bool
+
+	for idx, num := range input {
+		if num >= target {
+			if !largerOrEqualNumFound {
+				currClosest = num
+				currClosestIdx = idx
+				largerOrEqualNumFound = true
+			} else if num < currClosest {
+				currClosest = num
+				currClosestIdx = idx
+			}
+		}
+	}
+
+	return currClosestIdx
+}
+
+func (n *node) getAllFolderNamesAndSizesUnderX(x int, sizes *[]int, names *[]string) {
+	n.Metadata.Size = n.calculateSize()
+	if n.Metadata.Size < x && n.Metadata.DataType != FILE {
+		*sizes = append(*sizes, n.Metadata.Size)
+		*names = append(*names, n.Metadata.Name)
+	}
+	for _, child := range n.Children {
+		child.getAllFolderNamesAndSizesUnderX(x, sizes, names)
+	}
+}
+
+func (n *node) getAllFolderNamesAndSizesOverX(x int, sizes *[]int, names *[]string) {
+	n.Metadata.Size = n.calculateSize()
+	if n.Metadata.Size > x && n.Metadata.DataType != FILE {
+		*sizes = append(*sizes, n.Metadata.Size)
+		*names = append(*names, n.Metadata.Name)
+	}
+	for _, child := range n.Children {
+		child.getAllFolderNamesAndSizesOverX(x, sizes, names)
+	}
+}
+
+func (n *node) calculateSize() int {
+	if len(n.Children) == 0 {
+		return n.Metadata.Size
+	}
+	var sumOfChildrenSizes int
+	for _, child := range n.Children {
+		sumOfChildrenSizes += child.calculateSize()
+	}
+	n.Metadata.Size = sumOfChildrenSizes
+	return sumOfChildrenSizes
+}
 
 func isCommand(s string) bool {
 	return s[0] == DOLLAR_SIGN
@@ -85,8 +159,30 @@ func extractCommand(s string) []string {
 	return split[1:]
 }
 
-func (n *node) ls(s *Scanner) err {
+func createNode(s string) *node {
+	nodeData := strings.Split(s, " ")
 
+	var name string = nodeData[1]
+	var size int
+	var dataType dataType
+
+	if nodeData[0] == "dir" {
+		dataType = FOLDER
+	} else {
+		var err error
+		size, err = strconv.Atoi(nodeData[0])
+		if err != nil {
+			log.Fatal("Convert file size to int")
+		}
+		dataType = FILE
+	}
+	return &node{
+		Metadata: metadata{
+			DataType: dataType,
+			Name:     name,
+			Size:     size,
+		},
+	}
 }
 
 func (n *node) cd(dst string) *node {
