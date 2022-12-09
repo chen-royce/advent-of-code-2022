@@ -16,11 +16,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(forest)
-
-	visibilityMap := findVisibleTrees(forest)
-	log.Println(visibilityMap)
-	log.Println(len(visibilityMap))
+	log.Println(findBestView(forest))
 }
 
 type Forest [][]int
@@ -69,6 +65,93 @@ func parseRow(s string) ([]int, error) {
 		ret = append(ret, num)
 	}
 	return ret, nil
+}
+
+func findBestView(forest Forest) int {
+	var highestViewScore int
+	for i := range forest {
+		for j := range forest[i] {
+			if currScore := getViewScore(i, j, forest); currScore > highestViewScore {
+				highestViewScore = currScore
+			}
+		}
+	}
+	return highestViewScore
+}
+
+func getViewScore(row, col int, forest Forest) int {
+	return getLeftViewScore(row, col, forest) * getRightViewScore(row, col, forest) * getTopViewScore(row, col, forest) * getBottomViewScore(row, col, forest)
+}
+
+func getLeftViewScore(row, col int, forest Forest) int {
+	if col == 0 {
+		return 0
+	}
+	currHeight := forest[row][col]
+	var numSeen int
+	for i := col - 1; i >= 0; i-- {
+		if forest[row][i] < currHeight {
+			numSeen++
+		} else {
+			numSeen++
+			break
+		}
+	}
+	return numSeen
+}
+func getRightViewScore(row, col int, forest Forest) int {
+	if col == len(forest)-1 {
+		return 0
+	}
+	currHeight := forest[row][col]
+	var numSeen int
+	for i := col + 1; i < forest.width(); i++ {
+		if forest[row][i] < currHeight {
+			numSeen++
+		} else {
+			numSeen++
+			break
+		}
+	}
+	return numSeen
+}
+func getTopViewScore(row, col int, forest Forest) int {
+	if row == 0 {
+		return 0
+	}
+	currHeight := forest[row][col]
+	var numSeen int
+	for i := row - 1; i >= 0; i-- {
+		if forest[i][col] < currHeight {
+			numSeen++
+		} else {
+			numSeen++
+			break
+		}
+	}
+	return numSeen
+}
+func getBottomViewScore(row, col int, forest Forest) int {
+	if row == len(forest)-1 {
+		return 0
+	}
+	currHeight := forest[row][col]
+	var numSeen int
+	for i := row + 1; i < forest.height(); i++ {
+		if forest[i][col] < currHeight {
+			numSeen++
+		} else {
+			numSeen++
+			break
+		}
+	}
+	return numSeen
+}
+
+func print2dIntArray(twoDimensionalArray [][]int) {
+	for _, row := range twoDimensionalArray {
+		log.Println(row)
+	}
 }
 
 func findVisibleTrees(forest Forest) map[string]struct{} {
