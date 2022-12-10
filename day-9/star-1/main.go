@@ -22,10 +22,6 @@ func main() {
 	log.Println(len(rope.PastTailPositions))
 }
 
-// functionalities still to come:
-// tracking where tail has been
-// func to format positions into map keys
-
 type Move struct {
 	Direction string
 	Distance  int
