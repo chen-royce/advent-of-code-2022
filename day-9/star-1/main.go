@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// filepath := "./problem/input-simple.txt"
-	filepath := "./problem/input.txt"
+	filepath := "../problem/input.txt"
 	moves, err := ParseInput(filepath)
 	if err != nil {
 		log.Fatal(err)
