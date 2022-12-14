@@ -74,6 +74,18 @@ func addEdgeToAdjacencyList(currLocation, neighborLocation int, currNodeVal, nei
 	}
 }
 
+func findNodeLocation(needle uint8, haystack [][]uint8) int {
+	inputWidth := len(haystack[0])
+	for row := range haystack {
+		for col := range haystack[0] {
+			if haystack[row][col] == needle {
+				return (row * inputWidth) + col
+			}
+		}
+	}
+	return -1
+}
+
 func shortestPath() {
 	// intialize list of visited notes
 	// start from src
