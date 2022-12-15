@@ -1,14 +1,19 @@
 package main
 
+import (
+	"strconv"
+)
+
 const (
 	S uint8 = 83
-	Z uint8 = 90
+	E uint8 = 90
 )
 
 var (
 	elevations = "abcdefghijklmnopqrstuvwxyz"
 )
 
+// generateElevationsMap maps elevations a-z and S/E to their elevations
 func generateElevationsMap() map[uint8]int {
 	// initialize map
 	elevationsMap := make(map[uint8]int)
@@ -19,75 +24,71 @@ func generateElevationsMap() map[uint8]int {
 	}
 	// add special characters to map
 	elevationsMap[S] = 0
-	elevationsMap[Z] = 25
+	elevationsMap[E] = 25
 
 	return elevationsMap
 }
 
-type adjacencyList map[int][][]int
+// coordinatesToString takes a row # and col # and creates a string to use
+// as a UUID for the node at given coordinates
+func coordinatesToString(row, col int) string {
+	return strconv.Itoa(row) + "-" + strconv.Itoa(col)
+}
 
-// buildAdjacencyList maps the position of a node from a 2D input
-// array to arrays containing references to: 1) another node that
-// the node is connected to, and 2) edge weights;
+// adjacencyList is a map of node positions (represented as a string "row-col")
+// to a map from the neighbor's position (also represented "row-col") to its
+// weight
+type adjacencyList map[string]map[string]int
+
+// buildAdjacencyList returns an adjacencyList from an input
 func buildAdjacencyList(input [][]uint8) adjacencyList {
 	elevationsMap := generateElevationsMap()
-	adjacencyList := adjacencyList{}
+	adjList := map[string]map[string]int{}
 
-	rowLength := len(input[0])
 	for rowNum, row := range input {
 		for colNum, curr := range row {
-			currLocation := (rowNum * rowLength) + colNum
-			// find adjacent vertices
 			if rowNum != 0 {
-				topNeighborLocation := ((rowNum - 1) * rowLength) + colNum
-				topNeighborVal := input[rowNum-1][colNum]
-				addEdgeToAdjacencyList(currLocation, topNeighborLocation, curr, topNeighborVal, elevationsMap, adjacencyList)
+				topNeighbor := input[rowNum-1][colNum]
+				if elevationsMap[curr]-elevationsMap[topNeighbor] >= -1 {
+					_, ok := adjList[coordinatesToString(rowNum, colNum)]
+					if !ok {
+						adjList[coordinatesToString(rowNum, colNum)] = make(map[string]int)
+					}
+					adjList[coordinatesToString(rowNum, colNum)][coordinatesToString(rowNum-1, colNum)] = 1
+				}
 			}
 			if rowNum != len(input)-1 {
-				botNeighborLocation := ((rowNum + 1) * rowLength) + colNum
-				botNeighborVal := input[rowNum+1][colNum]
-				addEdgeToAdjacencyList(currLocation, botNeighborLocation, curr, botNeighborVal, elevationsMap, adjacencyList)
+				botNeighbor := input[rowNum+1][colNum]
+				if elevationsMap[curr]-elevationsMap[botNeighbor] >= -1 {
+					_, ok := adjList[coordinatesToString(rowNum, colNum)]
+					if !ok {
+						adjList[coordinatesToString(rowNum, colNum)] = make(map[string]int)
+					}
+					adjList[coordinatesToString(rowNum, colNum)][coordinatesToString(rowNum+1, colNum)] = 1
+				}
 			}
 			if colNum != 0 {
-				leftNeighborLocation := (rowNum * rowLength) + (colNum - 1)
 				leftNeighbor := input[rowNum][colNum-1]
-				addEdgeToAdjacencyList(currLocation, leftNeighborLocation, curr, leftNeighbor, elevationsMap, adjacencyList)
+				if elevationsMap[curr]-elevationsMap[leftNeighbor] >= -1 {
+					_, ok := adjList[coordinatesToString(rowNum, colNum)]
+					if !ok {
+						adjList[coordinatesToString(rowNum, colNum)] = make(map[string]int)
+					}
+					adjList[coordinatesToString(rowNum, colNum)][coordinatesToString(rowNum, colNum-1)] = 1
+				}
 			}
 			if colNum != len(input[0])-1 {
-				rightNeighborLocation := (rowNum * rowLength) + (colNum + 1)
 				rightNeighbor := input[rowNum][colNum+1]
-				addEdgeToAdjacencyList(currLocation, rightNeighborLocation, curr, rightNeighbor, elevationsMap, adjacencyList)
+				if elevationsMap[curr]-elevationsMap[rightNeighbor] >= -1 {
+					_, ok := adjList[coordinatesToString(rowNum, colNum)]
+					if !ok {
+						adjList[coordinatesToString(rowNum, colNum)] = make(map[string]int)
+					}
+					adjList[coordinatesToString(rowNum, colNum)][coordinatesToString(rowNum, colNum+1)] = 1
+				}
 			}
 		}
 	}
-	return adjacencyList
-}
 
-// addEdgeToAdjacencyList takes a node and its neighbor, an elevationsMap,
-// and an adjacencyList and updates the adjacencyList if it can find a
-// valid edge after calculating the weight via the elevationsMap
-func addEdgeToAdjacencyList(currLocation, neighborLocation int, currNodeVal, neighboringVal uint8, elevationsMap map[uint8]int, adjList adjacencyList) {
-	weight := elevationsMap[neighboringVal] - elevationsMap[currNodeVal]
-	if weight <= 1 {
-		edgeWeightArray := []int{neighborLocation, weight}
-		adjList[currLocation] = append(adjList[currLocation], edgeWeightArray)
-	}
-}
-
-func findNodeLocation(needle uint8, haystack [][]uint8) int {
-	inputWidth := len(haystack[0])
-	for row := range haystack {
-		for col := range haystack[0] {
-			if haystack[row][col] == needle {
-				return (row * inputWidth) + col
-			}
-		}
-	}
-	return -1
-}
-
-func shortestPath() {
-	// intialize list of visited notes
-	// start from src
-	// go to vertex with smallest-known cost
+	return adjList
 }
