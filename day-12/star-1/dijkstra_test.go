@@ -9,6 +9,36 @@ func TestCheckNeighbors(t *testing.T) {
 
 }
 
+func TestFindNodeLocation(t *testing.T) {
+	tests := []struct {
+		needle   uint8
+		haystack [][]uint8
+		want     string
+	}{
+		{
+			needle:   S,
+			haystack: [][]uint8{[]uint8{0, 0}, []uint8{83, 0}},
+			want:     "1-0",
+		},
+		{
+			needle:   S,
+			haystack: [][]uint8{[]uint8{0, 0}, []uint8{0, 83}},
+			want:     "1-1",
+		},
+		{
+			needle:   E,
+			haystack: [][]uint8{[]uint8{0, 0}, []uint8{69, 0}},
+			want:     "1-0",
+		},
+	}
+	for i, test := range tests {
+		got := findNodeLocation(test.needle, test.haystack)
+		if got != test.want {
+			t.Fatalf("Test #%d: Got %s, want %s", i+1, got, test.want)
+		}
+	}
+}
+
 func TestBuildAdjacencyList(t *testing.T) {
 	tests := []struct {
 		input [][]uint8

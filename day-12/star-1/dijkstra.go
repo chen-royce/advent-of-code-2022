@@ -1,13 +1,13 @@
 package main
 
 import (
-	"sort"
+	"log"
 	"strconv"
 )
 
 const (
 	S uint8 = 83
-	E uint8 = 90
+	E uint8 = 69
 )
 
 var (
@@ -28,6 +28,19 @@ func generateElevationsMap() map[uint8]int {
 	elevationsMap[E] = 25
 
 	return elevationsMap
+}
+
+// findNodeLocation finds the first instance of a node, delimited
+// by its uint8/byte character
+func findNodeLocation(needle uint8, haystack [][]uint8) string {
+	for row := range haystack {
+		for col := range haystack[0] {
+			if haystack[row][col] == needle {
+				return coordinatesToString(row, col)
+			}
+		}
+	}
+	return ""
 }
 
 // coordinatesToString takes a row # and col # and creates a string to use
@@ -96,26 +109,32 @@ func buildAdjacencyList(input [][]uint8) adjacencyList {
 
 // findShortestPath utilizes Dijkstra's algorithm in order to create a map of
 // the shortest path from a designated start node
-func findShortestPaths(start string, adjList adjacencyList) map[string]int {
+func findShortestPaths(start, finish string, adjList adjacencyList) int {
 	shortestPaths := make(map[string]int)
 	shortestPaths[start] = 0
 	checkNeighbors(start, adjList, shortestPaths)
-	return shortestPaths
+	return shortestPaths[finish]
 }
 
 func checkNeighbors(node string, adjList adjacencyList, shortestPathsMap map[string]int) {
-	var neighbors []string
+	// Check node's distance from its neighbors
 	for neighbor := range adjList[node] {
-		neighbors = append(neighbors, neighbor)
+		log.Println(adjList)
 		// If we've found a shorter path to a neighbor, update the shortest paths map
 		if shortestPathsMap[node]+shortestPathsMap[neighbor] < shortestPathsMap[neighbor] {
 			shortestPathsMap[neighbor] = shortestPathsMap[node] + shortestPathsMap[neighbor]
 		}
 	}
-	sort.Slice(neighbors, func(i, j int) bool {
-		return adjList[node][neighbors[i]] < adjList[node][neighbors[j]]
-	})
-	for _, neighbor := range neighbors {
-		checkNeighbors(neighbor, adjList, shortestPathsMap)
+	// Remove current node from adjacency list to mark it as visited
+	delete(adjList, node)
+	// Repeat process on smallest unvisited node in shortestPathsMap
+	var toVisit []string
+	for node := range shortestPathsMap {
+		if _, unvisited := adjList[node]; unvisited {
+			toVisit = append(toVisit, node)
+		}
+	}
+	if len(toVisit) > 0 {
+		checkNeighbors(toVisit[0], adjList, shortestPathsMap)
 	}
 }
