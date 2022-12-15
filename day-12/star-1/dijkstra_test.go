@@ -5,6 +5,10 @@ import (
 	"testing"
 )
 
+func TestCheckNeighbors(t *testing.T) {
+
+}
+
 func TestBuildAdjacencyList(t *testing.T) {
 	tests := []struct {
 		input [][]uint8

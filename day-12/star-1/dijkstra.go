@@ -1,6 +1,7 @@
 package main
 
 import (
+	"sort"
 	"strconv"
 )
 
@@ -91,4 +92,30 @@ func buildAdjacencyList(input [][]uint8) adjacencyList {
 	}
 
 	return adjList
+}
+
+// findShortestPath utilizes Dijkstra's algorithm in order to create a map of
+// the shortest path from a designated start node
+func findShortestPaths(start string, adjList adjacencyList) map[string]int {
+	shortestPaths := make(map[string]int)
+	shortestPaths[start] = 0
+	checkNeighbors(start, adjList, shortestPaths)
+	return shortestPaths
+}
+
+func checkNeighbors(node string, adjList adjacencyList, shortestPathsMap map[string]int) {
+	var neighbors []string
+	for neighbor := range adjList[node] {
+		neighbors = append(neighbors, neighbor)
+		// If we've found a shorter path to a neighbor, update the shortest paths map
+		if shortestPathsMap[node]+shortestPathsMap[neighbor] < shortestPathsMap[neighbor] {
+			shortestPathsMap[neighbor] = shortestPathsMap[node] + shortestPathsMap[neighbor]
+		}
+	}
+	sort.Slice(neighbors, func(i, j int) bool {
+		return adjList[node][neighbors[i]] < adjList[node][neighbors[j]]
+	})
+	for _, neighbor := range neighbors {
+		checkNeighbors(neighbor, adjList, shortestPathsMap)
+	}
 }
