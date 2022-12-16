@@ -117,12 +117,17 @@ func findShortestPaths(start, finish string, adjList adjacencyList) int {
 }
 
 func checkNeighbors(node string, adjList adjacencyList, shortestPathsMap map[string]int) {
+	log.Println("START NODE:", node)
 	// Check node's distance from its neighbors
 	for neighbor := range adjList[node] {
-		log.Println(adjList)
+		log.Println("NEIGHBOR:", neighbor)
+		// If we've discovered a new neighbor, add to shortestPathsMap
+		if _, ok := shortestPathsMap[neighbor]; !ok {
+			shortestPathsMap[neighbor] = shortestPathsMap[node] + adjList[node][neighbor]
+		}
 		// If we've found a shorter path to a neighbor, update the shortest paths map
-		if shortestPathsMap[node]+shortestPathsMap[neighbor] < shortestPathsMap[neighbor] {
-			shortestPathsMap[neighbor] = shortestPathsMap[node] + shortestPathsMap[neighbor]
+		if shortestPathsMap[node]+adjList[node][neighbor] < shortestPathsMap[neighbor] {
+			shortestPathsMap[neighbor] = shortestPathsMap[node] + adjList[node][neighbor]
 		}
 	}
 	// Remove current node from adjacency list to mark it as visited

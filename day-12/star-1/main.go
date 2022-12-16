@@ -9,8 +9,8 @@ import (
 func main() {
 	// parse input and generate adjacency matrix
 	// filepath := "./problem/input.txt"
-	filepath := "./problem/sample.txt"
-	// filepath := "./problem/custom.txt"
+	// filepath := "./problem/sample.txt"
+	filepath := "./problem/custom.txt"
 	input, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		log.Fatal(err)

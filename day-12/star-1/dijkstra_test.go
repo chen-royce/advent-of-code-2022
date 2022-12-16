@@ -5,9 +5,24 @@ import (
 	"testing"
 )
 
-func TestCheckNeighbors(t *testing.T) {
-
-}
+// func TestCheckNeighbors(t *testing.T) {
+// 	tests := []struct{
+// 		name string
+// 		node string
+// 		adjList adjacencyList
+// 		shortestPathsMap map[string]int
+// 	}{
+// 		{
+// 			name: "All nodes visited"
+// 			node: "1-1"
+// 			adjList: [][]uint8{
+// 				[]uint8{},
+// 				[]uint8{},
+// 				[]uint8{},
+// 			},
+// 		}
+// 	}
+// }
 
 func TestFindNodeLocation(t *testing.T) {
 	tests := []struct {
