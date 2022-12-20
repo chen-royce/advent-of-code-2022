@@ -15,6 +15,7 @@ def test_find_closing_bracket():
 def test_convert_input():
     assert convert_input("[3]") == [3]
     assert convert_input("[3,[2,1]]") == [3, [2, 1]]
+    assert convert_input("[1,1,3,1,1]") == [1,1,3,1,1]
     assert convert_input("[[3,2],[1]]") == [[3,2],[1]]
     assert convert_input("[1,[2,[3,[4,[5,6,7]]]],8,9]") == [1,[2,[3,[4,[5,6,7]]]],8,9]
 
